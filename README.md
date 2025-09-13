@@ -75,7 +75,7 @@ pip install -r requirements.txt
 
 ## 📜 License
 
-The PianoVAM dataset is distributed under the [CC BY-NC 4.0 License](https://creativecommons.org/licenses/by-nc/4.0/). The code in this repository is subject to the same license or as specified in the `LICENSE` file within the repository.
+The PianoVAM dataset is distributed under the [CC BY-NC 4.0 License](https://creativecommons.org/licenses/by-nc/4.0/). The code in this repository is subject to the same license.
 
 ## ✍️ Citation
 
