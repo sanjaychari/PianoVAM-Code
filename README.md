@@ -96,12 +96,11 @@ If you find this dataset or code useful in your research, please cite the follow
 **Toolkits (PiaRec & ASDF)**:
 
 ```bibtex
-@inproceedings{park2025toolkits,
-  title={Two Web Toolkits for Multimodal Piano Performance Dataset Acquisition and Fingering Annotation},
-  author={Junhyung Park and Yonghyun Kim and Joonhyung Bae and Taegyun Kwon and Kirak Kim and Alexander Lerch and Juhan Nam},
-  booktitle={Late-Breaking Demo of the 26th International Society for Music Information Retrieval Conference (ISMIR)},
-  year={2025},
-  address={Daejeon, South Korea}
+@misc{park2025toolkits,
+  author = {Junhyung Park and Yonghyun Kim and Joonhyung Bae and Taegyun Kwon and Kirak Kim and Alexander Lerch and Juhan Nam},
+  title = {Two Web Toolkits for Multimodal Piano Performance Dataset Acquisition and Fingering Annotation},
+  howpublished = {Late-Breaking Demo of the 26th International Society for Music Information Retrieval Conference (ISMIR)},
+  year = {2025}
 }
 ```
 
