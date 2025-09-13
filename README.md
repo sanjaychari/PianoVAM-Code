@@ -85,7 +85,7 @@ If you find this dataset or code useful in your research, please cite the follow
 
 ```bibtex
 @inproceedings{kim2025pianovam,
-  title={{PianoVAM}: A Multimodal Piano Performance Dataset},
+  title={PianoVAM: A Multimodal Piano Performance Dataset},
   author={Yonghyun Kim and Junhyung Park and Joonhyung Bae and Taegyun Kwon and Kirak Kim and Alexander Lerch and Juhan Nam},
   booktitle={Proceedings of the 26th International Society for Music Information Retrieval Conference (ISMIR)},
   year={2025},
