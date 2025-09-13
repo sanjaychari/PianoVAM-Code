@@ -1,4 +1,5 @@
 # PianoVAM-Code
+_This Repo is currently Under Construction! (Sep 13, 2025)_
 
 [**[PianoVAM Dataset (HuggingFace)]**](https://huggingface.co/PianoVAM/)
 [**[PianoVAM Description (GitHub Page)]**](https://yonghyunk1m.github.io/PianoVAM/)
@@ -42,7 +43,6 @@ PianoVAM-Code/
 ├── FingeringDetection/   # Code for the ASDF fingering annotation toolkit
 ├── PreProcessing/        # Scripts for data pre-processing, including audio-MIDI alignment
 ├── Transcription/        # Code to reproduce the piano transcription benchmarks from the paper
-├── Sample/               # Sample data to demonstrate the use of the toolkits
 └── README.md
 ```
 
