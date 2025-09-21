@@ -4,7 +4,7 @@ _This Repo is currently Under Construction! (Sep 13, 2025)_
 [**[PianoVAM Dataset (HuggingFace)]**](https://huggingface.co/PianoVAM/)
 [**[PianoVAM Description (GitHub Page)]**](https://yonghyunk1m.github.io/PianoVAM/)
 
-This repository provides the implementation for the ISMIR 2025 paper, "[PianoVAM: A Multimodal Piano Performance Dataset](https://arxiv.org/abs/2509.08800)," and its associated LBD paper, "Two Web Toolkits for Multimodal Piano Performance Dataset Acquisition and Fingering Annotation. (arXiv - To be uploaded)"
+This repository provides the implementation for the ISMIR 2025 paper, "[PianoVAM: A Multimodal Piano Performance Dataset](https://arxiv.org/abs/2509.08800)," and its associated LBD paper, "[Two Web Toolkits for Multimodal Piano Performance Dataset Acquisition and Fingering Annotation](https://arxiv.org/abs/2509.15222)."
 
 It includes the two primary web toolkits used to collect and process the PianoVAM dataset, as well as scripts to reproduce the benchmark experiments described in the paper.
 
