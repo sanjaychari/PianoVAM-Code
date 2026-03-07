@@ -1,2 +1,4 @@
 *.pkl
 *.mid
+*.tsv
+*.json
