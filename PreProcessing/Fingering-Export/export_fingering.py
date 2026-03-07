@@ -199,7 +199,7 @@ def main():
     parser.add_argument("--use-miditotoken", action="store_true",
                        help="Use miditok for frame alignment (requires miditok, symusic)")
     parser.add_argument("--swap-hands", action="store_true",
-                       help="Swap L<->R (테스트: 카메라 미러링/좌우 컨벤션 불일치 시)")
+                       help="Swap L<->R (test: camera mirroring / L-R convention mismatch)")
     args = parser.parse_args()
 
     pickles_dir = os.path.join(args.dataset_root, "fingering_pickles")

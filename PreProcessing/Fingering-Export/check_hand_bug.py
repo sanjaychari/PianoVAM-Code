@@ -1,8 +1,8 @@
 """
-손 예측 관련 잠재적 버그 체크:
-1. decider가 hand를 계산하지만 finger=Noinfo일 때 export에서 버리는지
-2. L/R 체계적 반전 여부
-3. keyhandlist[3] 인덱스 오류 (0-based vs 1-based)
+Hand prediction bug checks:
+1. Whether decider's hand is discarded when finger=Noinfo in export
+2. Systematic L/R swap detection
+3. keyhandlist[3] index error (0-based vs 1-based)
 """
 import json
 import pickle
@@ -25,7 +25,7 @@ GT_MAP = _fingergt.GT_MAP
 
 
 def check_keyhandlist_structure():
-    """keyhandlist[3] (fingercount) 구조 확인 - 인덱스 0~10 vs 1~10"""
+    """Check keyhandlist[3] (fingercount) structure - indices 0~10 vs 1~10"""
     pickles_dir = Path(config.DATASET_ROOT) / "fingering_pickles"
     if not pickles_dir.exists():
         print("  [SKIP] pickles dir not found")
@@ -47,7 +47,7 @@ def check_keyhandlist_structure():
                     try:
                         for k in range(1, 11):
                             _ = fc[k]
-                        print(f"    keyhandinfo[3][1..10] 접근 OK")
+                        print(f"    keyhandinfo[3][1..10] access OK")
                     except IndexError as e:
                         print(f"    BUG: keyhandinfo[3][k] IndexError: {e}")
                 break
@@ -55,13 +55,13 @@ def check_keyhandlist_structure():
 
 
 def check_hand_discarded():
-    """finger=Noinfo일 때 decider의 hand가 버려지는지 확인"""
+    """Check if decider's hand is discarded when finger=Noinfo"""
     from decider_standalone import decide_fingering
     import pretty_midi
 
     pickles_dir = Path(config.DATASET_ROOT) / "fingering_pickles"
     midi_dir = Path(config.DATASET_ROOT) / "MIDI"
-    basename = "2024-02-15_20-07-54"  # noinfo 27개
+    basename = "2024-02-15_20-07-54"  # 27 noinfo
     pkl_path = pickles_dir / f"fingering_{basename}.pkl"
     midi_path = midi_dir / f"{basename}.mid"
     if not pkl_path.exists() or not midi_path.exists():
@@ -75,7 +75,7 @@ def check_hand_discarded():
     notes.sort(key=lambda n: n.start)
 
     tokenlist = []
-    for i, n in enumerate(notes[:200]):  # 200개만
+    for i, n in enumerate(notes[:200]):  # first 200 only
         tokenlist.append([
             int(n.start * 60),
             max(0, min(87, n.pitch - 21)),
@@ -85,7 +85,7 @@ def check_hand_discarded():
     tokenlist_copy = [list(t) for t in tokenlist]
     pressedfingerlist, _ = decide_fingering(tokenlist_copy, keyhandlist)
 
-    # tokenlist_copy는 mutate됨 - tokenlist[i][-1] = hand (Left/Right/Noinfo)
+    # tokenlist_copy is mutated - tokenlist[i][-1] = hand (Left/Right/Noinfo)
     noinfo_with_hand = 0
     noinfo_total = 0
     for i in range(min(150, len(pressedfingerlist))):
@@ -95,15 +95,15 @@ def check_hand_discarded():
             if hand in ("Left", "Right"):
                 noinfo_with_hand += 1
                 if noinfo_with_hand <= 3:
-                    print(f"    note {i}: finger=Noinfo but decider hand={hand} (버려짐!)")
+                    print(f"    note {i}: finger=Noinfo but decider hand={hand} (discarded!)")
 
-    print(f"  finger=Noinfo인 음 중 decider가 hand를 알고 있는 경우: {noinfo_with_hand}/{noinfo_total}")
+    print(f"  Notes with finger=Noinfo where decider has hand: {noinfo_with_hand}/{noinfo_total}")
     if noinfo_with_hand > 0:
-        print(f"  --> BUG: {noinfo_with_hand}개 음에서 hand 정보가 export 시 버려짐")
+        print(f"  --> BUG: {noinfo_with_hand} notes have hand discarded at export")
 
 
 def check_lr_swap():
-    """Hand 오류가 L<->R 체계적 반전인지"""
+    """Check if hand errors are systematic L<->R swap"""
     input_dir = config.OUTPUT_DIR
     hand_swap = 0
     hand_other = 0
@@ -126,23 +126,23 @@ def check_lr_swap():
                     hand_swap += 1
                 else:
                     hand_other += 1
-    print(f"  Hand 오류 중 L<->R 반전: {hand_swap}, 그 외: {hand_other}")
+    print(f"  Hand errors: L<->R swap {hand_swap}, other {hand_other}")
     if hand_swap > 0 and hand_other == 0:
-        print("  --> Hand 오류는 전부 L<->R 반전 (체계적 반전 가능성)")
+        print("  --> All hand errors are L<->R swap (systematic swap possible)")
 
 
 def main():
     print("=" * 60)
-    print("손 예측 버그 체크")
+    print("Hand prediction bug check")
     print("=" * 60)
 
-    print("\n1. keyhandlist[3] (fingercount) 인덱스 구조:")
+    print("\n1. keyhandlist[3] (fingercount) index structure:")
     check_keyhandlist_structure()
 
-    print("\n2. finger=Noinfo일 때 decider hand 버림 여부:")
+    print("\n2. Decider hand discarded when finger=Noinfo:")
     check_hand_discarded()
 
-    print("\n3. Hand 오류 패턴 (L/R 반전?):")
+    print("\n3. Hand error pattern (L/R swap?):")
     check_lr_swap()
 
     print("\n" + "=" * 60)

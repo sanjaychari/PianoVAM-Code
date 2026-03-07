@@ -145,10 +145,10 @@ def main():
     # Per-recording quality table
     print()
     print("=" * 90)
-    print("녹음별 품질 (Exact 기준 정렬)")
+    print("Per-recording quality (sorted by Exact)")
     print("=" * 90)
-    print(f"{'녹음명':<28} {'Exact%':>10} {'Hand%':>10} {'평가음수':>8} {'미판정':>8}")
-    print(f"{'':28} {'손+손가락':>10} {'손만':>10} {'':8} {'':8}")
+    print(f"{'Recording':<28} {'Exact%':>10} {'Hand%':>10} {'Eval N':>8} {'Noinfo':>8}")
+    print(f"{'':28} {'(hand+finger)':>10} {'(hand only)':>10} {'':8} {'':8}")
     print("-" * 90)
     for r in sorted(results, key=lambda x: -x[5]):
         print(f"{r[0]:<28} {r[5]:>7.1f}% {r[6]:>7.1f}% {r[3]:>5} {r[4]:>7}")
