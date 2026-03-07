@@ -1,13 +1,12 @@
 from miditok import REMI, TokenizerConfig
 from symusic import Score
-from floatinghands import *
+from .floatinghands import *
 import math
 # STEP 1: Import the necessary modules.
 from shapely.geometry import Polygon, Point
 import geopandas
 import sys, os
-
-sys.path.append("..")
+from stqdm import stqdm
 
 
 # Creating a multitrack tokenizer configuration, read the doc to explore other parameters
@@ -38,7 +37,7 @@ def generatetokenizer(file_name, fps, highres=False):
     return tokenizer, beatres, tokens
 
 
-# token frame별로 자르기
+# Split by token frame
 def miditotoken(file_name, fps, mode):  # mode: original or simplified
     # Loads a midi, converts to tokens, and back to a MIDI
     # calling the tokenizer will automatically detect MIDIs, paths and tokens
@@ -96,7 +95,7 @@ def miditotoken(file_name, fps, mode):  # mode: original or simplified
 
 
 def tokentoframeinfo(tokenlist, frame_count):
-    # token list until now: [Total Start Position, Pitch(0~95(가상건반은 G8까지 있음)), End position , token number]
+    # token list until now: [Total Start Position, Pitch(0~95, virtual keys up to G8), End position, token number]
     framemidilist = []
     for frame in range(frame_count):
         keylist = []
@@ -155,7 +154,7 @@ def handfingercorresponder(framemidilist, framehandfingerlist, keyboard, tokenli
     #Extract onset frames
     keyonset={}
     for token in tokenlist:
-        if token[2]-token[0] >=5: # 너무 짧은 음들은 Onset-focusing 적용안함.
+        if token[2]-token[0] >=5:  # Skip onset-focusing for very short notes
             if token[1] in keyonset.keys():
                 keyonset[token[1]]+=list(range(token[0],math.ceil(token[0]+0.2*(token[2]-token[0]))))
             else:
@@ -167,14 +166,14 @@ def handfingercorresponder(framemidilist, framehandfingerlist, keyboard, tokenli
     frame=0
     for _ in stqdm(range(len(framemidilist)), desc="Correponding frame images to midi..."):
         framekeylist = framemidilist[frame]
-        for key in framekeylist:  # 각 frame에서 눌려져 있는 상태의 각 key마다
+        for key in framekeylist:  # For each key pressed in this frame
             mindiff = 88
             mindiffhand = "Noinfo"
             fingercount = [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0]
             handspositioninfo = framehandfingerlist[frame][0]
             fingertippositionsinfo = framehandfingerlist[frame][2]
             handcounter = 0
-            for i in range(len(handspositioninfo)):  # 해당 frame의 각 손마다
+            for i in range(len(handspositioninfo)):  # For each hand in this frame
                 handpositioninfo=handspositioninfo[i]
                 fingertippositioninfo=fingertippositionsinfo[i]
                 if len(handpositioninfo) <= 1 or framehandfingerlist[frame][1][0] == "Noinfo":
@@ -185,28 +184,28 @@ def handfingercorresponder(framemidilist, framehandfingerlist, keyboard, tokenli
                             mindiff = abs(key[0] - handpositioninfo[j])
                             mindiffhand = handpositioninfo[0]
                         if handpositioninfo[0] == "Left":
-                            if (abs(key[0] - handpositioninfo[j]) == 0):  # 손가락과 frame midi 일치
+                            if (abs(key[0] - handpositioninfo[j]) == 0):  # Finger matches frame MIDI
                                 fingercount[
                                     framehandfingerlist[frame][1][
                                         handspositioninfo.index(handpositioninfo)
                                     ][j - 1]
                                 ] += exception1(key[0],handpositioninfo[j])*onsetcoefficient(keyonset, key[0], frame, mode="off")*1  # 1~5
                             
-                            elif keydistance(keyboard, key[0], fingertippositioninfo[j-1])<halfkeyboarddistance:  # 손가락과 frame midi 반 건반 오차 (euclidean distance) (0.5만큼 보정)
+                            elif keydistance(keyboard, key[0], fingertippositioninfo[j-1])<halfkeyboarddistance:  # Half-key tolerance (euclidean distance)
                                 fingercount[
                                     framehandfingerlist[frame][1][
                                         handspositioninfo.index(handpositioninfo)
                                     ][j - 1]
-                                ] += exception1(key[0],handpositioninfo[j])*onsetcoefficient(keyonset, key[0], frame, mode="off")*(0*(1-keydistance(keyboard, key[0], fingertippositioninfo[j-1])/halfkeyboarddistance)+1*(1-keydistance(keyboard, key[0], fingertippositioninfo[j-1])/halfkeyboarddistance)**2) # 1~5
+                                ] += exception1(key[0],handpositioninfo[j])*onsetcoefficient(keyonset, key[0], frame, mode="off")*(0*(1-keydistance(keyboard, key[0], fingertippositioninfo[j-1])/halfkeyboarddistance)+1*(1-keydistance(keyboard, key[0], fingertippositioninfo[j-1])/halfkeyboarddistance)**2)  # 1~5
                         if handpositioninfo[0] == "Right":
-                            if (abs(key[0] - handpositioninfo[j]) < 1):  # 손가락과 frame midi 일치
+                            if (abs(key[0] - handpositioninfo[j]) < 1):  # Finger matches frame MIDI
                                 fingercount[
                                     framehandfingerlist[frame][1][
                                         handspositioninfo.index(handpositioninfo)
                                     ][j - 1]
                                     + 5
                                 ] += exception1(key[0],handpositioninfo[j])*onsetcoefficient(keyonset, key[0], frame, mode="off")*1  # 6~10
-                            elif keydistance(keyboard, key[0], fingertippositioninfo[j-1])<halfkeyboarddistance:  # 손가락과 frame midi 반 건반 오차 (euclidean distance) (0.5만큼 보정)
+                            elif keydistance(keyboard, key[0], fingertippositioninfo[j-1])<halfkeyboarddistance:  # Half-key tolerance (euclidean distance)
                                 fingercount[
                                     framehandfingerlist[frame][1][
                                         handspositioninfo.index(handpositioninfo)
@@ -220,7 +219,7 @@ def handfingercorresponder(framemidilist, framehandfingerlist, keyboard, tokenli
                 mindiffhand = "Noinfo"
             if (
                 handcounter == 1 and mindiff > 1 and mindiffhand != "Noinfo"
-            ):  # 오차범위: 반음
+            ):  # Error tolerance: half step
                 mindiffhand = handtypes[handtypes.index(mindiffhand) - 1]
             key.append(mindiffhand)
             key.append(fingercount)

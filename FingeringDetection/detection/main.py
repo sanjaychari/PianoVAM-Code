@@ -1,22 +1,36 @@
+"""
+MediaPipe-based video processing and hand landmark extraction
+"""
+import os
+import pickle
+import time as timemodule
+
 import cv2
 import numpy as np
-import os
-from psutil import Process
-# STEP 1: Import the necessary modules.
 import mediapipe as mp
 from mediapipe.tasks import python
 from mediapipe.tasks.python import vision
 from PIL import Image
-from floatinghands import *
-from midicomparison import *
-import pickle
 from tqdm.auto import tqdm
 from stqdm import stqdm
-import time as timemodule
-# Note: file order is main>evaluate>midicomparison>floatinghands
 
-# STEP 2: Create an HandLandmarker object.
-base_options = python.BaseOptions(model_asset_path="./FingeringDetection/hand_landmarker.task")
+from .floatinghands import (
+    handclass,
+    modelskeleton,
+    depthlist,
+    faultyframes,
+    detectfloatingframes,
+    draw_keyboard_on_image,
+    draw_landmarks_and_floatedness_on_image,
+    generatekeyboard,
+)
+# Paths
+import sys
+_FINGERING_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+HAND_LANDMARKER_PATH = os.path.join(_FINGERING_DIR, "hand_landmarker.task")
+KEYBOARD_COORDINATE_PATH = os.path.join(_FINGERING_DIR, "keyboardcoordinateinfo.pkl")
+
+base_options = python.BaseOptions(model_asset_path=HAND_LANDMARKER_PATH)
 min_hand_detection_confidence = 0.85
 min_hand_presence_confidence = 0.8
 min_tracking_confidence = 0.5
@@ -52,12 +66,7 @@ def datagenerate(videoname):
 
     frame_count = int(video.get(cv2.CAP_PROP_FRAME_COUNT))
     frame_rate = video.get(cv2.CAP_PROP_FPS)
-    with open(
-        "./FingeringDetection/"
-        + "keyboardcoordinateinfo"
-        + ".pkl",
-        "rb",
-    ) as f:
+    with open(KEYBOARD_COORDINATE_PATH, "rb") as f:
         keyboardcoordinateinfo = pickle.load(f)
     keyboard = generatekeyboard(
         lu=keyboardcoordinateinfo[videoname[:-4]][0],
@@ -115,7 +124,7 @@ def datagenerate(videoname):
             image = mp.Image(image_format=mp.ImageFormat.SRGB, data=img_np)
             time = frame * int(1000 / frame_rate)
             detection_result = detector.detect_for_video(image, timestamp_ms=time)
-            # tempimglist.append([image, detection_result])                          # 메모리 관리를 위해 좀 느리더라도 뒤에서 image는 다시 로드해준다.
+            # tempimglist.append([image, detection_result])  # Reload image later for memory management
             tempimglist.append(detection_result)
             if len(detection_result.handedness) == 0:
                 nohandframelist.append(frame)

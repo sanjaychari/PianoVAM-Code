@@ -41,20 +41,35 @@ This repository offers two Graphical User Interface (GUI) toolkits that support 
 ```
 PianoVAM-Code/
 ├── FingeringDetection/   # Code for the ASDF fingering annotation toolkit
-├── PreProcessing/        # Scripts for data pre-processing, including audio-MIDI alignment
-├── Transcription/        # Code to reproduce the piano transcription benchmarks from the paper
+├── PreProcessing/       # Data pre-processing (dataset download, audio-MIDI alignment, etc.)
+│   ├── Dataset-Download/
+│   ├── Audio-MIDI-Alignment/
+│   └── Audio-Loudness-Normalization/
+├── Transcription/       # Code to reproduce the piano transcription benchmarks from the paper
+├── setup.sh             # Environment setup
+├── download_pianovam.sh  # Dataset download launcher
 └── README.md
 ```
 
 ## 🚀 Getting Started
 
-### Requirements
+### Environment Setup
 
-All necessary libraries are listed in the `requirements.txt` file. You can install them using the following command:
+**Option 1: setup.sh (recommended)** — Automatically creates conda environment `pianoVAM` and installs dependencies
+
+```bash
+./setup.sh
+conda activate pianoVAM
+```
+
+**Option 2: Manual installation** — All required libraries are listed in `requirements.txt`
 
 ```bash
 pip install -r requirements.txt
 ```
+
+> **Note:** PreProcessing/Audio-MIDI-Alignment requires `fluidsynth` to be installed on your system.  
+> Ubuntu/Debian: `sudo apt-get install fluidsynth fluid-soundfont-gm`
 
 ### Usage
 
@@ -72,6 +87,30 @@ pip install -r requirements.txt
 3.  Calibrate the keyboard area in the 'Keyboard Detection' tab and extract hand data in the 'Generate Mediapipe Data' tab.
 4.  Generate automated fingering candidates from the 'Pre-labeling' tab.
 5.  Use the interactive interface in the 'Labeling' tab to review and correct the suggested fingerings.
+
+#### Download PianoVAM Dataset
+
+**Interactive mode** (run without arguments):
+
+```bash
+./download.sh
+```
+
+You will be prompted to select modalities (audio, video, midi, handskeleton, tsv), splits (train, validation, test), and output directory.
+
+**CLI mode** (non-interactive / scripting):
+
+```bash
+./download.sh -m audio,midi      # Audio and MIDI only
+./download.sh -s train           # Train split only
+./download.sh -m video -s train,test
+./download.sh --list             # List files without downloading
+./download.sh -o my_data         # Custom output directory
+```
+
+Options: `-m` modalities, `-s` splits, `-o` output dir, `--list` dry run.
+
+Requires the `pianoVAM` conda environment (see Environment Setup).
 
 ## 📜 License
 

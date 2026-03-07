@@ -72,7 +72,7 @@ class MidiFile(mido.MidiFile):
 
             #print("channel", idx, "start")
             for msg in channel:
-                if msg.type == "control_change":   # control=64: 서스테인페달 control=67: 소프트페달
+                if msg.type == "control_change":   # control=64: sustain pedal, control=67: soft pedal
                     if msg.control == 7:
                         volume = msg.value
                         # directly assign volume
@@ -172,11 +172,11 @@ class MidiFile(mido.MidiFile):
 
         # build colors
         cmap = mpl.colors.ListedColormap(['black','white', 'red'])
-        bounds=[-1,1,50,127]  #0: 검정 10: 하양 100: 빨강 
+        bounds=[-1,1,50,127]  # 0: black, 10: white, 100: red
         norm = mpl.colors.BoundaryNorm(bounds, cmap.N)
 
         # draw piano roll and stack image on a1
-        a1.imshow(roll[0], origin="lower", interpolation='nearest', cmap=cmap, aspect='auto', norm=norm)  #roll[0]: 차피 채널 1개밖에 없음
+        a1.imshow(roll[0], origin="lower", interpolation='nearest', cmap=cmap, aspect='auto', norm=norm)  # roll[0]: only one channel
         for i in roll[0]:
             for j in i:
                 if j != 10 and j!= 100 and j != 0: print(j)

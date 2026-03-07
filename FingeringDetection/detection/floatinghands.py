@@ -2,7 +2,6 @@ from mediapipe import solutions
 from mediapipe.framework.formats import landmark_pb2
 import numpy as np
 import cv2
-import numpy as np
 from stqdm import stqdm
 import math
 from scipy.optimize import fsolve
@@ -10,7 +9,7 @@ from shapely import Polygon
 
 # STEP 1: Import the necessary modules.
 import sys
-sys.set_int_max_str_digits(15000)   # sympy 계산할때 이거 limit에 걸려서 늘려줌
+sys.set_int_max_str_digits(15000)   # Increase limit for sympy calculations
 
 MARGIN = 10  # pixels
 FONT_SIZE = 1
@@ -21,8 +20,8 @@ def draw_landmarks_and_floatedness_on_image(
     rgb_image, detection_result, frame, floating_handinfos
 ):
 
-    CUSTOM_LANDMARK_STYLE = solutions.drawing_utils.DrawingSpec(color=(255, 182, 193), thickness=6, circle_radius=5)  # 파스텔핑
-    CUSTOM_CONNECTION_STYLE = solutions.drawing_utils.DrawingSpec(color=(135, 206, 235), thickness=3)  # 스카이블루
+    CUSTOM_LANDMARK_STYLE = solutions.drawing_utils.DrawingSpec(color=(255, 182, 193), thickness=6, circle_radius=5)  # Pastel pink
+    CUSTOM_CONNECTION_STYLE = solutions.drawing_utils.DrawingSpec(color=(135, 206, 235), thickness=3)  # Sky blue
     hand_landmarks_list = detection_result.hand_landmarks
     handedness_list = detection_result.handedness
     annotated_image = np.copy(rgb_image)
@@ -95,9 +94,6 @@ def draw_keyboard_on_image(rgb_image, keylist):
         solutions.drawing_utils.draw_landmarks(annotated_image, hand_landmarks_proto)
 
     return annotated_image
-
-
-sys.path.append("..")
 
 
 class handclass:

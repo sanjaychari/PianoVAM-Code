@@ -1,5 +1,23 @@
 # How to use our semi-Automatic System for Detecting Fingering (ASDF) for PianoVAM
 
+## Folder structure
+
+```
+FingeringDetection/
+├── detection/          # Fingering detection algorithm
+│   ├── main.py         # MediaPipe data generation
+│   ├── midicomparison.py
+│   ├── floatinghands.py
+│   └── fingergt.py
+├── visualization/      # Fingering visualization
+│   └── stroll.py       # MIDI piano roll
+├── fingering_pickles/  # Pre-finger labeling results (per-frame key-hand correspondence)
+├── midiconvert/        # MIDI input files
+├── videocapture/       # Video input and MediaPipe processing results
+├── ASDF.py             # Streamlit app (entry point)
+└── ...
+```
+
 * 0. Recommended Prerequisites: Python 3.9.21 with
 ```
 miditok 3.0.5.post1
@@ -11,10 +29,10 @@ streamlit 1.37.1
 streamlit_image_coordinates 0.2.0
 numpy 1.24.1
 ```
-with your recorded MIDI files in FingeringDetection/midiconvert folder and video files in FingeringdDetection/videocapture folder.
+with your recorded MIDI files in FingeringDetection/midiconvert folder and video files in FingeringDetection/videocapture folder.
 We recommend each video within no longer than 30 minutes if your MediaPipe environment does not provide GPU support.
 * 1. Download the whole FingeringDetection folder.
-* 2. Change the directory part of line 35 of Fingeringdetection/main.py and line 20 of FingeringDetection/midicomparison.py to your home directory:
+* 2. Change the directory in FingeringDetection/detection/main.py (filepath) and FingeringDetection/detection/midicomparison.py (midifilepath) to your home directory:
 ```
 filepath = os.path.join(os.path.expanduser('~'),your-directory,'FingeringDetection','videocapture') #Your home directory
 ```
