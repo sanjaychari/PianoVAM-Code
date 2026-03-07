@@ -47,17 +47,22 @@ def finger_to_standard(f):
     return str(f)
 
 
-def finger_to_hand_finger(f):
+def finger_to_hand_finger(f, swap_hands=False):
     """
     Convert internal finger (1-10) to (hand, finger) where hand in L/R, finger in 1-5.
     Returns ("L"|"R", 1-5) or ("Noinfo", None).
+    swap_hands: If True, swap L<->R (for testing camera mirroring / convention mismatch).
     """
     if f == "Noinfo" or f is None:
         return ("Noinfo", None)
     if isinstance(f, int) and 1 <= f <= 10:
         if f <= 5:
-            return ("L", f)
-        return ("R", f - 5)
+            hand, finger = ("L", f)
+        else:
+            hand, finger = ("R", f - 5)
+        if swap_hands:
+            hand = "R" if hand == "L" else "L"
+        return (hand, finger)
     return ("Noinfo", None)
 
 
@@ -69,7 +74,7 @@ def load_midi_notes_sorted(midi_path):
     return notes
 
 
-def export_tsv(notes, fingerinfo, output_path, use_tsv_ref=False, tsv_path=None, finger_format="separate"):
+def export_tsv(notes, fingerinfo, output_path, use_tsv_ref=False, tsv_path=None, finger_format="separate", swap_hands=False):
     """
     Export to TSV. finger_format: "combined" (L1,R5) or "separate" (hand, finger columns).
     """
@@ -77,7 +82,7 @@ def export_tsv(notes, fingerinfo, output_path, use_tsv_ref=False, tsv_path=None,
     for i, n in enumerate(notes):
         raw = fingerinfo[i] if i < len(fingerinfo) else "Noinfo"
         if finger_format == "separate":
-            hand, finger = finger_to_hand_finger(raw)
+            hand, finger = finger_to_hand_finger(raw, swap_hands=swap_hands)
             finger_str = str(finger) if finger is not None else "Noinfo"
         else:
             hand, finger_str = None, finger_to_standard(raw)
@@ -106,7 +111,7 @@ def export_tsv(notes, fingerinfo, output_path, use_tsv_ref=False, tsv_path=None,
             f.write("\t".join(str(x) for x in r) + "\n")
 
 
-def export_json(notes, fingerinfo, output_path, finger_format="separate"):
+def export_json(notes, fingerinfo, output_path, finger_format="separate", swap_hands=False):
     """Export to JSON. finger_format: "combined" (finger: L1) or "separate" (hand, finger)."""
     data = []
     for i, n in enumerate(notes):
@@ -118,7 +123,7 @@ def export_json(notes, fingerinfo, output_path, finger_format="separate"):
             "velocity": int(n.velocity),
         }
         if finger_format == "separate":
-            hand, finger = finger_to_hand_finger(raw)
+            hand, finger = finger_to_hand_finger(raw, swap_hands=swap_hands)
             entry["hand"] = hand
             entry["finger"] = finger if finger is not None else "Noinfo"
         else:
@@ -129,7 +134,7 @@ def export_json(notes, fingerinfo, output_path, finger_format="separate"):
         json.dump({"notes": data}, f, indent=2)
 
 
-def process_one(midi_path, pickles_dir, output_dir, tsv_dir, format_tsv, format_json, use_tsv_ref, finger_format="separate", use_miditotoken=False):
+def process_one(midi_path, pickles_dir, output_dir, tsv_dir, format_tsv, format_json, use_tsv_ref, finger_format="separate", use_miditotoken=False, swap_hands=False):
     """Process one MIDI file and export fingering."""
     basename = Path(midi_path).stem
     pkl_path = find_fingerinfo_pkl(pickles_dir, basename)
@@ -171,10 +176,10 @@ def process_one(midi_path, pickles_dir, output_dir, tsv_dir, format_tsv, format_
 
     if format_tsv:
         out_tsv = os.path.join(output_dir, basename + ".tsv")
-        export_tsv(notes, fingerinfo, out_tsv, use_tsv_ref=use_tsv_ref, tsv_path=tsv_ref, finger_format=finger_format)
+        export_tsv(notes, fingerinfo, out_tsv, use_tsv_ref=use_tsv_ref, tsv_path=tsv_ref, finger_format=finger_format, swap_hands=swap_hands)
     if format_json:
         out_json = os.path.join(output_dir, basename + ".json")
-        export_json(notes, fingerinfo, out_json, finger_format=finger_format)
+        export_json(notes, fingerinfo, out_json, finger_format=finger_format, swap_hands=swap_hands)
 
     return True, None
 
@@ -193,6 +198,8 @@ def main():
                        help="Comma-separated basenames to process (e.g. 2024-02-15_20-07-54)")
     parser.add_argument("--use-miditotoken", action="store_true",
                        help="Use miditok for frame alignment (requires miditok, symusic)")
+    parser.add_argument("--swap-hands", action="store_true",
+                       help="Swap L<->R (테스트: 카메라 미러링/좌우 컨벤션 불일치 시)")
     args = parser.parse_args()
 
     pickles_dir = os.path.join(args.dataset_root, "fingering_pickles")
@@ -227,7 +234,7 @@ def main():
             print(f"Processing {idx + 1}/{total}...")
         success, err = process_one(
             midi_path, pickles_dir, output_dir, tsv_dir,
-            format_tsv, format_json, args.use_tsv_ref, args.finger_format, args.use_miditotoken
+            format_tsv, format_json, args.use_tsv_ref, args.finger_format, args.use_miditotoken, args.swap_hands
         )
         if success:
             ok += 1
